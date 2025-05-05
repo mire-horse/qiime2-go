@@ -1,0 +1,29 @@
+version: '3'
+
+services:
+  qiime2-go:
+    build: .
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./uploads:/app/uploads
+      - ./exports:/app/exports
+    environment:
+      - FLASK_APP=app.py
+    restart: unless-stopped
+
+# ---------------------------------------------------
+# Usage Instructions:
+# ---------------------------------------------------
+
+# 1. Build and start the container:
+#    docker-compose up -d
+#
+# 2. Access the web application:
+#    http://localhost:5000
+#
+# 3. Stop the container:
+#    docker-compose down
+#
+# Note: The 'uploads' and 'exports' directories will be created in your
+# current directory and mapped to the container for persistent storage.

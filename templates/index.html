@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QIIME2-go | Artifact Export</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2c3e50;
+            --accent-color: #e74c3c;
+            --light-bg: #f8f9fa;
+            --dark-bg: #2c3e50;
+            --success-color: #2ecc71;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+        }
+        
+        body {
+            padding-top: 60px;
+            background-color: var(--light-bg);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 900px;
+        }
+        
+        .navbar {
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            background: transparent;
+        }
+        
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.5rem;
+            letter-spacing: 0.5px;
+        }
+        
+        .nav-link {
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-link:hover {
+            transform: translateY(-2px);
+        }
+        
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        .card-title {
+            color: var(--secondary-color);
+            font-weight: 600;
+        }
+        
+        .header-img {
+            max-height: 80px;
+            margin-bottom: 15px;
+        }
+        
+        .drop-zone {
+            border: 2px dashed var(--primary-color);
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background-color: rgba(52, 152, 219, 0.05);
+        }
+        
+        .drop-zone:hover {
+            background-color: rgba(52, 152, 219, 0.1);
+        }
+        
+        .drop-zone.active {
+            border-color: var(--success-color);
+            background-color: rgba(46, 204, 113, 0.1);
+        }
+        
+        .btn {
+            border-radius: 30px;
+            padding: 8px 20px;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        .btn-primary:hover {
+            background-color: #2980b9;
+            border-color: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+        }
+        
+        .btn-success {
+            background-color: var(--success-color);
+            border-color: var(--success-color);
+        }
+        
+        .btn-success:hover {
+            background-color: #27ae60;
+            border-color: #27ae60;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(46, 204, 113, 0.3);
+        }
+        
+        .btn-outline-primary {
+            color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        .btn-outline-primary:hover {
+            background-color: var(--primary-color);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+        }
+        
+        .flash-messages {
+            margin-bottom: 20px;
+        }
+        
+        .info-section {
+            margin-top: 30px;
+        }
+        
+        .display-5 {
+            font-weight: 700;
+            color: var(--secondary-color);
+            margin-bottom: 0.5rem;
+        }
+        
+        .text-muted {
+            color: #6c757d !important;
+        }
+        
+        .bg-light {
+            background-color: #f8f9fa !important;
+        }
+        
+        code {
+            color: var(--accent-color);
+            background-color: rgba(231, 76, 60, 0.1);
+            padding: 2px 5px;
+            border-radius: 4px;
+        }
+        
+        footer {
+            padding: 20px 0;
+            margin-top: 50px;
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
+        }
+        
+        .icon-large {
+            font-size: 3rem;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+        
+        .feature-icon {
+            display: inline-block;
+            width: 50px;
+            height: 50px;
+            line-height: 50px;
+            text-align: center;
+            background-color: rgba(52, 152, 219, 0.1);
+            border-radius: 50%;
+            margin-right: 10px;
+            color: var(--primary-color);
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="/"></a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link {% if active_tab == 'export' %}active{% endif %}" href="/"><i class="bi bi-file-earmark-zip me-1"></i> Artifact Export</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if active_tab == 'metadata' %}active{% endif %}" href="/metadata-validator"><i class="bi bi-check-circle me-1"></i> Metadata Validator</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="text-center mb-5">
+            <div class="mb-3">
+                <img src="/static/img/q2go-icon.png" alt="QIIME2-go Logo" height="80" class="mb-2">
+            </div>
+            <h1 class="display-5 fw-bold">QIIME2 Artifact Export Tool</h1>
+            <p class="text-muted fs-5">Easily export your QIIME2 artifacts to their native formats</p>
+        </div>
+
+        <!-- Flash Messages -->
+        {% if get_flashed_messages() %}
+        <div class="flash-messages">
+            {% for message in get_flashed_messages() %}
+            <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i> {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Upload Card -->
+        <div class="card mb-4">
+            <div class="card-body p-4">
+                <h5 class="card-title mb-3"><i class="bi bi-upload me-2"></i>Upload QIIME2 Artifact</h5>
+                <p class="card-text text-muted mb-4">Upload your .qza or .qzv file to extract its contents</p>
+                
+                <form action="/upload" method="post" enctype="multipart/form-data" id="upload-form">
+                    <div class="drop-zone" id="drop-zone">
+                        <div class="mb-4">
+                            <i class="bi bi-cloud-arrow-up icon-large d-block mb-3"></i>
+                            <p class="fs-5 mb-4">Drag & drop your file here or click to browse</p>
+                            <input type="file" name="file" id="file-input" class="d-none" accept=".qza,.qzv">
+                            <button type="button" class="btn btn-primary px-4 py-2">
+                                <i class="bi bi-folder2-open me-2"></i>Browse Files
+                            </button>
+                        </div>
+                        <div id="file-info" class="d-none">
+                            <div class="alert alert-info">
+                                <p class="mb-2"><i class="bi bi-file-earmark me-2"></i>Selected file: <span id="file-name" class="fw-bold"></span></p>
+                            </div>
+                            <button type="submit" class="btn btn-success px-4 py-2">
+                                <i class="bi bi-box-arrow-down me-2"></i>Export Artifact
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Info Card -->
+        <div class="card info-section">
+            <div class="card-body p-4">
+                <h5 class="card-title mb-3"><i class="bi bi-info-circle me-2"></i>About QIIME2 Artifact Export</h5>
+                <p>This tool allows you to easily export QIIME2 artifacts (.qza files) and visualizations (.qzv files) to their native formats without using the command line.</p>
+                
+                <h6 class="mt-4 mb-3"><i class="bi bi-list-check me-2"></i>Supported Export Types:</h6>
+                <div class="row">
+                    <div class="col-md-6">
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item bg-transparent"><i class="bi bi-table text-primary me-2"></i><strong>FeatureTable</strong> → Biom tables</li>
+                            <li class="list-group-item bg-transparent"><i class="bi bi-file-earmark-text text-primary me-2"></i><strong>FeatureData</strong> → FASTA, TSV files</li>
+                            <li class="list-group-item bg-transparent"><i class="bi bi-diagram-3 text-primary me-2"></i><strong>Phylogeny</strong> → Newick files</li>
+                            <li class="list-group-item bg-transparent"><i class="bi bi-graph-up text-primary me-2"></i><strong>PCoA</strong> → Emperor visualization files</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item bg-transparent"><i class="bi bi-file-earmark-richtext text-primary me-2"></i><strong>Visualization</strong> → HTML and supporting files</li>
+                            <li class="list-group-item bg-transparent"><i class="bi bi-database text-primary me-2"></i><strong>SampleData</strong> → Various formats</li>
+                            <li class="list-group-item bg-transparent"><i class="bi bi-bar-chart text-primary me-2"></i><strong>AlphaDiversity</strong> → TSV files</li>
+                            <li class="list-group-item bg-transparent"><i class="bi bi-plus-circle text-primary me-2"></i>And many more...</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="mt-4 p-3 bg-light rounded">
+                    <p class="mb-2"><i class="bi bi-terminal me-2"></i>The export is equivalent to running the following QIIME2 command:</p>
+                    <code class="d-block p-3 bg-dark text-light rounded">qiime tools export --input-path your-artifact.qza --output-path output-dir</code>
+                </div>
+                
+                <div class="text-center mt-4">
+                    <a href="/artifact-types" class="btn btn-outline-primary px-4 py-2">
+                        <i class="bi bi-book me-2"></i>Learn More About Artifact Types
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <footer class="mt-5 text-center text-muted">
+            <p>Made with <span class="text-danger">♥</span> for the QIIME2 community</p>
+            <p class="small">QIIME2-go: A comprehensive platform for QIIME2 data processing</p>
+        </footer>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const dropZone = document.getElementById('drop-zone');
+            const fileInput = document.getElementById('file-input');
+            const browseBtn = document.getElementById('browse-btn');
+            const fileInfo = document.getElementById('file-info');
+            const fileName = document.getElementById('file-name');
+            
+            // Browse button click
+            browseBtn.addEventListener('click', function() {
+                fileInput.click();
+            });
+            
+            // File selected
+            fileInput.addEventListener('change', function() {
+                if (this.files.length > 0) {
+                    showFileInfo(this.files[0]);
+                }
+            });
+            
+            // Drag and drop functionality
+            dropZone.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                dropZone.classList.add('active');
+            });
+            
+            dropZone.addEventListener('dragleave', function() {
+                dropZone.classList.remove('active');
+            });
+            
+            dropZone.addEventListener('drop', function(e) {
+                e.preventDefault();
+                dropZone.classList.remove('active');
+                
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    fileInput.files = files;
+                    showFileInfo(files[0]);
+                }
+            });
+            
+            function showFileInfo(file) {
+                // Validate file type
+                const extension = file.name.split('.').pop().toLowerCase();
+                if (['qza', 'qzv'].indexOf(extension) === -1) {
+                    alert('Please upload a QIIME2 artifact (.qza) or visualization (.qzv) file.');
+                    return;
+                }
+                
+                fileName.textContent = file.name;
+                fileInfo.classList.remove('d-none');
+            }
+        });
+    </script>
+</body>
+</html>

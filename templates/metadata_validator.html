@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Metadata Validator | QIIME2-go</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2c3e50;
+            --accent-color: #e74c3c;
+            --light-bg: #f8f9fa;
+            --dark-bg: #2c3e50;
+            --success-color: #2ecc71;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+        }
+        
+        body {
+            padding-top: 60px;
+            background-color: var(--light-bg);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 900px;
+        }
+        
+        .navbar {
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            background: transparent;
+        }
+        
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.5rem;
+            letter-spacing: 0.5px;
+        }
+        
+        .nav-link {
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-link:hover {
+            transform: translateY(-2px);
+        }
+        
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+            overflow: hidden;
+            margin-bottom: 30px;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        .card-title {
+            color: var(--secondary-color);
+            font-weight: 600;
+        }
+        
+        .drop-zone {
+            border: 2px dashed var(--primary-color);
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background-color: rgba(52, 152, 219, 0.05);
+        }
+        
+        .drop-zone:hover {
+            background-color: rgba(52, 152, 219, 0.1);
+        }
+        
+        .drop-zone.active {
+            border-color: var(--success-color);
+            background-color: rgba(46, 204, 113, 0.1);
+        }
+        
+        .btn {
+            border-radius: 30px;
+            padding: 8px 20px;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        .btn-primary:hover {
+            background-color: #2980b9;
+            border-color: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+        }
+        
+        .btn-success {
+            background-color: var(--success-color);
+            border-color: var(--success-color);
+        }
+        
+        .btn-success:hover {
+            background-color: #27ae60;
+            border-color: #27ae60;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(46, 204, 113, 0.3);
+        }
+        
+        .flash-messages {
+            margin-bottom: 20px;
+        }
+        
+        .info-section {
+            margin-top: 30px;
+        }
+        
+        .validation-results {
+            display: none;
+            margin-top: 20px;
+        }
+        
+        .validation-success {
+            color: var(--success-color);
+        }
+        
+        .validation-error {
+            color: var(--danger-color);
+        }
+        
+        .validation-warning {
+            color: var(--warning-color);
+        }
+        
+        .display-5 {
+            font-weight: 700;
+            color: var(--secondary-color);
+            margin-bottom: 0.5rem;
+        }
+        
+        .icon-large {
+            font-size: 3rem;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+        
+        pre {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            overflow-x: auto;
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+        
+        footer {
+            padding: 20px 0;
+            margin-top: 50px;
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="/"></a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link {% if active_tab == 'export' %}active{% endif %}" href="/"><i class="bi bi-file-earmark-zip me-1"></i> Artifact Export</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if active_tab == 'metadata' %}active{% endif %}" href="/metadata-validator"><i class="bi bi-check-circle me-1"></i> Metadata Validator</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="text-center mb-5">
+            <div class="mb-3">
+                <img src="/static/img/q2go-icon.png" alt="QIIME2-go Logo" height="80" class="mb-2">
+            </div>
+            <h1 class="display-5 fw-bold">QIIME2 Metadata Validator</h1>
+            <p class="text-muted fs-5">Validate your metadata files for use with QIIME2</p>
+        </div>
+
+        <!-- Flash Messages -->
+        {% if get_flashed_messages() %}
+        <div class="flash-messages">
+            {% for message in get_flashed_messages() %}
+            <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i> {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Upload Card -->
+        <div class="card">
+            <div class="card-body p-4">
+                <h5 class="card-title mb-3"><i class="bi bi-upload me-2"></i>Upload Metadata File</h5>
+                <p class="card-text text-muted mb-4">Upload your metadata file (.tsv or .txt) to validate it for QIIME2 compatibility</p>
+                
+                <form id="metadata-form" enctype="multipart/form-data">
+                    <div class="drop-zone" id="drop-zone">
+                        <div class="mb-4">
+                            <i class="bi bi-file-earmark-text icon-large d-block mb-3"></i>
+                            <p class="fs-5 mb-4">Drag & drop your file here or click to browse</p>
+                            <input type="file" name="file" id="file-input" class="d-none" accept=".tsv,.txt">
+                            <button type="button" class="btn btn-primary px-4 py-2" id="browse-btn">
+                                <i class="bi bi-folder2-open me-2"></i>Browse Files
+                            </button>
+                        </div>
+                        <div id="file-info" class="d-none">
+                            <div class="alert alert-info">
+                                <p class="mb-2"><i class="bi bi-file-earmark me-2"></i>Selected file: <span id="file-name" class="fw-bold"></span></p>
+                            </div>
+                            <button type="submit" class="btn btn-success px-4 py-2">
+                                <i class="bi bi-check-circle me-2"></i>Validate Metadata
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Validation Results -->
+        <div class="card validation-results" id="validation-results">
+            <div class="card-body p-4">
+                <h5 class="card-title mb-3"><i class="bi bi-clipboard-data me-2"></i>Validation Results</h5>
+                <div id="validation-status" class="mb-4"></div>
+                
+                <div id="errors-container" class="mb-4">
+                    <h6 class="validation-error"><i class="bi bi-x-circle me-2"></i>Errors:</h6>
+                    <ul id="errors-list" class="validation-error"></ul>
+                </div>
+                
+                <div id="warnings-container" class="mb-4">
+                    <h6 class="validation-warning"><i class="bi bi-exclamation-triangle me-2"></i>Warnings:</h6>
+                    <ul id="warnings-list" class="validation-warning"></ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Info Card -->
+        <div class="card info-section">
+            <div class="card-body p-4">
+                <h5 class="card-title mb-3"><i class="bi bi-info-circle me-2"></i>About QIIME2 Metadata Files</h5>
+                <p>QIIME2 metadata files are tab-separated text files (.tsv) that contain information about your samples. These files must follow specific formatting rules to be compatible with QIIME2.</p>
+                
+                <h6 class="mt-4 mb-3"><i class="bi bi-list-check me-2"></i>Metadata Requirements:</h6>
+                <ul class="list-group list-group-flush mb-4">
+                    <li class="list-group-item bg-transparent"><i class="bi bi-file-earmark-text text-primary me-2"></i><strong>File Format:</strong> Tab-separated values (.tsv)</li>
+                    <li class="list-group-item bg-transparent"><i class="bi bi-key text-primary me-2"></i><strong>ID Column:</strong> Must have a column named '#SampleID', 'sample-id', or 'SampleID'</li>
+                    <li class="list-group-item bg-transparent"><i class="bi bi-grid text-primary me-2"></i><strong>No Empty Cells:</strong> Sample IDs cannot be empty</li>
+                    <li class="list-group-item bg-transparent"><i class="bi bi-fingerprint text-primary me-2"></i><strong>No Duplicate IDs:</strong> Sample IDs must be unique</li>
+                    <li class="list-group-item bg-transparent"><i class="bi bi-type text-primary me-2"></i><strong>Column Names:</strong> Should contain only alphanumeric characters, hyphens, and underscores</li>
+                    <li class="list-group-item bg-transparent"><i class="bi bi-tag text-primary me-2"></i><strong>Column Types:</strong> Columns can be marked as categorical or numeric using the <code>#q2:types</code> directive</li>
+                </ul>
+                
+                <h6 class="mt-4 mb-3"><i class="bi bi-file-earmark-code me-2"></i>Example Metadata File:</h6>
+                <pre class="mb-4"># Metadata for microbial analysis
+# Columns: sample-id, barcode-sequence, body-site, subject
+# #q2:types categorical, categorical, categorical, categorical
+#SampleID	BarcodeSequence	BodySite	Subject	Age	Weight
+Sample1	AGCTACGAGCTA	Gut	Subject1	25	70.5
+Sample2	AGCTACGAGCTT	Skin	Subject2	32	65.2
+Sample3	ACGTACGATCGA	Mouth	Subject1	25	70.5</pre>
+                
+                <div class="alert alert-info mb-4">
+                    <i class="bi bi-info-circle me-2"></i>
+                    <p class="mb-0">The <code>#q2:types</code> directive specifies column types. In the example above, all columns are marked as categorical. You can also specify <code>numeric</code> for quantitative data.</p>
+                </div>
+                
+                <div class="alert alert-info">
+                    <i class="bi bi-lightbulb me-2"></i>
+                    <p class="mb-0">For more information on QIIME2 metadata formatting, visit the <a href="https://docs.qiime2.org/2023.5/tutorials/metadata/" target="_blank" class="alert-link">QIIME2 metadata documentation</a>.</p>
+                </div>
+            </div>
+        </div>
+        
+        <footer class="mt-5 text-center text-muted">
+            <p>Made with <span class="text-danger">♥</span> for the QIIME2 community</p>
+            <p class="small">QIIME2-go: A comprehensive platform for QIIME2 data processing</p>
+        </footer>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const dropZone = document.getElementById('drop-zone');
+            const fileInput = document.getElementById('file-input');
+            const browseBtn = document.getElementById('browse-btn');
+            const fileInfo = document.getElementById('file-info');
+            const fileName = document.getElementById('file-name');
+            const metadataForm = document.getElementById('metadata-form');
+            const validationResults = document.getElementById('validation-results');
+            const validationStatus = document.getElementById('validation-status');
+            const errorsList = document.getElementById('errors-list');
+            const warningsList = document.getElementById('warnings-list');
+            const errorsContainer = document.getElementById('errors-container');
+            const warningsContainer = document.getElementById('warnings-container');
+            
+            // Browse button click
+            browseBtn.addEventListener('click', function() {
+                fileInput.click();
+            });
+            
+            // File selected
+            fileInput.addEventListener('change', function() {
+                if (this.files.length > 0) {
+                    showFileInfo(this.files[0]);
+                }
+            });
+            
+            // Drag and drop functionality
+            dropZone.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                dropZone.classList.add('active');
+            });
+            
+            dropZone.addEventListener('dragleave', function() {
+                dropZone.classList.remove('active');
+            });
+            
+            dropZone.addEventListener('drop', function(e) {
+                e.preventDefault();
+                dropZone.classList.remove('active');
+                
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    fileInput.files = files;
+                    showFileInfo(files[0]);
+                }
+            });
+            
+            function showFileInfo(file) {
+                // Validate file type
+                const extension = file.name.split('.').pop().toLowerCase();
+                if (['tsv', 'txt'].indexOf(extension) === -1) {
+                    alert('Please upload a metadata file (.tsv or .txt).');
+                    return;
+                }
+                
+                fileName.textContent = file.name;
+                fileInfo.classList.remove('d-none');
+            }
+            
+            // Form submission
+            metadataForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const formData = new FormData();
+                formData.append('file', fileInput.files[0]);
+                
+                // Show loading state
+                validationStatus.innerHTML = `
+                    <div class="d-flex align-items-center justify-content-center mb-3">
+                        <div class="spinner-border text-primary me-3" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <span class="fs-5">Validating metadata file...</span>
+                    </div>`;
+                validationResults.style.display = 'block';
+                errorsContainer.style.display = 'none';
+                warningsContainer.style.display = 'none';
+                
+                // Send request to validate metadata
+                fetch('/validate-metadata', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        if (data.valid) {
+                            validationStatus.innerHTML = `
+                                <div class="alert alert-success">
+                                    <div class="d-flex align-items-center">
+                                        <i class="bi bi-check-circle-fill fs-1 me-3"></i>
+                                        <div>
+                                            <h5 class="alert-heading mb-1">Validation Successful!</h5>
+                                            <p class="mb-0">Your metadata file is valid for use with QIIME2.</p>
+                                        </div>
+                                    </div>
+                                </div>`;
+                        } else {
+                            validationStatus.innerHTML = `
+                                <div class="alert alert-danger">
+                                    <div class="d-flex align-items-center">
+                                        <i class="bi bi-x-circle-fill fs-1 me-3"></i>
+                                        <div>
+                                            <h5 class="alert-heading mb-1">Validation Failed</h5>
+                                            <p class="mb-0">Your metadata file has issues that need to be fixed.</p>
+                                        </div>
+                                    </div>
+                                </div>`;
+                        }
+                        
+                        // Display errors if any
+                        if (data.errors && data.errors.length > 0) {
+                            errorsList.innerHTML = '';
+                            data.errors.forEach(error => {
+                                const li = document.createElement('li');
+                                li.textContent = error;
+                                errorsList.appendChild(li);
+                            });
+                            errorsContainer.style.display = 'block';
+                        } else {
+                            errorsContainer.style.display = 'none';
+                        }
+                        
+                        // Display warnings if any
+                        if (data.warnings && data.warnings.length > 0) {
+                            warningsList.innerHTML = '';
+                            data.warnings.forEach(warning => {
+                                const li = document.createElement('li');
+                                li.textContent = warning;
+                                warningsList.appendChild(li);
+                            });
+                            warningsContainer.style.display = 'block';
+                        } else {
+                            warningsContainer.style.display = 'none';
+                        }
+                    } else {
+                        validationStatus.innerHTML = `
+                            <div class="alert alert-danger">
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-x-circle-fill fs-1 me-3"></i>
+                                    <div>
+                                        <h5 class="alert-heading mb-1">Error</h5>
+                                        <p class="mb-0">${data.message}</p>
+                                    </div>
+                                </div>
+                            </div>`;
+                    }
+                })
+                .catch(error => {
+                    validationStatus.innerHTML = `
+                        <div class="alert alert-danger">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-x-circle-fill fs-1 me-3"></i>
+                                <div>
+                                    <h5 class="alert-heading mb-1">Error</h5>
+                                    <p class="mb-0">${error.message}</p>
+                                </div>
+                            </div>
+                        </div>`;
+                });
+            });
+        });
+    </script>
+</body>
+</html>
